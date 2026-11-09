@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>도그팰리스 입실 전 확인</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  /* ===== 기본 색상 ===== */
+  :root{
+    --bg:#f6f1e9;        /* 따뜻한 베이지 */
+    --card:#ffffff;
+    --ink:#2b2420;       /* 진한 갈색빛 검정 */
+    --sub:#6b5f55;
+    --line:#e4d9ca;
+    --main:#5b7a4a;      /* 숲 초록 */
+    --main-dark:#46613a;
+    --main-soft:#eaf1e4;
+    --accent:#c9772f;    /* 장작불 주황 */
+    --accent-soft:#fbeedf;
+    --danger:#c0392b;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:"Pretendard",-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    background:var(--bg);color:var(--ink);
+    font-size:19px;line-height:1.6;
+    padding-bottom:140px;
+  }
+  .wrap{max-width:560px;margin:0 auto;padding:0 16px}
+
+  /* ===== 상단 ===== */
+  header{
+    background:var(--main);color:#fff;text-align:center;
+    padding:34px 20px 30px;border-radius:0 0 28px 28px;margin-bottom:22px;
+  }
+  .brand{font-size:15px;letter-spacing:.25em;opacity:.85;font-weight:600}
+  header h1{font-size:30px;font-weight:800;margin:6px 0 10px;line-height:1.3}
+  header p{font-size:18px;opacity:.95}
+  .slogan{margin-top:14px;font-size:15px;opacity:.8}
+
+  .intro{
+    background:var(--card);border-radius:20px;padding:20px 22px;margin-bottom:18px;
+    border:2px solid var(--line);font-size:18px;
+  }
+  .intro b{color:var(--main-dark)}
+
+  /* ===== 질문 카드 ===== */
+  .q{
+    background:var(--card);border-radius:22px;padding:24px 20px;margin-bottom:18px;
+    border:2px solid var(--line);
+  }
+  .q.error{border-color:var(--danger)}
+  .q-head{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+  .num{
+    flex:none;width:38px;height:38px;border-radius:50%;
+    background:var(--main);color:#fff;font-weight:800;font-size:19px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .q h2{font-size:23px;font-weight:800;line-height:1.35}
+  .hint{color:var(--sub);font-size:17px;margin:4px 0 16px}
+  .need{color:var(--danger);font-size:16px;font-weight:700;margin-left:4px}
+  .err-msg{display:none;color:var(--danger);font-weight:700;font-size:17px;margin-top:10px}
+  .q.error .err-msg{display:block}
+
+  label.lb{display:block;font-weight:700;font-size:18px;margin:16px 0 8px}
+  label.lb:first-child{margin-top:0}
+
+  input[type=text],input[type=tel],input[type=date],textarea{
+    width:100%;font:inherit;font-size:20px;color:var(--ink);
+    padding:16px 16px;border:2px solid var(--line);border-radius:14px;background:#fffdfa;
+    min-height:60px;
+  }
+  textarea{min-height:130px;resize:vertical}
+  input:focus,textarea:focus{outline:none;border-color:var(--main);background:#fff}
+  ::placeholder{color:#b0a395}
+
+  /* ===== 큰 선택 버튼 ===== */
+  .choices{display:grid;gap:10px}
+  .choices.two{grid-template-columns:1fr 1fr}
+  .choices.three{grid-template-columns:1fr 1fr 1fr}
+  .chip{
+    font:inherit;font-size:19px;font-weight:700;color:var(--ink);
+    background:#fffdfa;border:2px solid var(--line);border-radius:14px;
+    min-height:60px;padding:10px 12px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;text-align:center;gap:6px;
+    -webkit-tap-highlight-color:transparent;transition:background .15s,border-color .15s;
+  }
+  .chip{position:relative;word-break:keep-all}
+  .chip.on{background:var(--main);border-color:var(--main);color:#fff}
+  .chip.on::before{content:"✓";font-weight:900}
+  .choices .chip.on::before{
+    position:absolute;top:-9px;right:-7px;width:26px;height:26px;border-radius:50%;
+    background:var(--accent);color:#fff;font-size:15px;display:flex;align-items:center;justify-content:center;
+    border:2px solid #fff;
+  }
+  .choices.three .chip{padding:8px 4px;font-size:17px;white-space:nowrap}
+  .chips-small{display:flex;flex-wrap:wrap;gap:8px}
+  .chips-small .chip{min-height:50px;font-size:17px;padding:8px 14px;flex:0 0 auto}
+
+  /* ===== 부가서비스 ===== */
+  .opt{border:2px solid var(--line);border-radius:18px;padding:18px;margin-bottom:14px;background:#fffdfa}
+  .opt-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .opt-name{font-size:21px;font-weight:800}
+  .opt-price{font-size:20px;font-weight:800;color:var(--accent)}
+  .opt-desc{color:var(--sub);font-size:16px;margin:4px 0 14px}
+  .gift{
+    display:none;background:var(--accent-soft);border-radius:14px;padding:14px 16px;
+    margin-top:12px;font-size:17px;font-weight:600;color:#7a4515;
+  }
+  .gift.show{display:block}
+
+  /* ===== 숫자 올리고 내리기 ===== */
+  .stepper{display:flex;align-items:center;justify-content:center;gap:14px}
+  .stepper button{
+    width:64px;height:64px;border-radius:50%;border:2px solid var(--main);
+    background:#fff;color:var(--main);font-size:34px;font-weight:700;line-height:1;cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .stepper button:active{background:var(--main-soft)}
+  .stepper button:disabled{border-color:var(--line);color:var(--line)}
+  .stepper .val{min-width:110px;text-align:center;font-size:28px;font-weight:800}
+  .note{font-size:16px;color:var(--sub);text-align:center;margin-top:10px}
+
+  /* ===== 반려견 카드 ===== */
+  .dog{border:2px solid var(--line);border-radius:18px;padding:18px;margin-bottom:14px;background:#fffdfa}
+  .dog-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+  .dog-title{font-size:21px;font-weight:800;color:var(--main-dark)}
+  .dog-del{
+    font:inherit;font-size:16px;background:none;border:2px solid var(--line);border-radius:10px;
+    padding:6px 12px;color:var(--sub);cursor:pointer;
+  }
+  .add-dog{
+    width:100%;font:inherit;font-size:20px;font-weight:800;color:var(--main-dark);
+    background:var(--main-soft);border:2px dashed var(--main);border-radius:16px;
+    min-height:64px;cursor:pointer;
+  }
+
+  /* ===== 안내 링크 ===== */
+  .info-link{
+    display:block;text-align:center;font-size:18px;font-weight:700;color:var(--main-dark);
+    background:var(--card);border:2px solid var(--line);border-radius:16px;padding:16px;
+    text-decoration:none;margin-bottom:18px;
+  }
+
+  /* ===== 하단 고정 보내기 ===== */
+  .bottom{
+    position:fixed;left:0;right:0;bottom:0;background:rgba(246,241,233,.97);
+    border-top:2px solid var(--line);padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+  }
+  .bottom .wrap{padding:0}
+  .total{display:flex;justify-content:space-between;font-size:17px;margin-bottom:8px;color:var(--sub)}
+  .total b{color:var(--ink);font-size:19px;white-space:nowrap}
+  .total small{display:block;font-size:15px;color:var(--accent);font-weight:700}
+  .send{
+    width:100%;font:inherit;font-size:23px;font-weight:800;color:#fff;
+    background:var(--main);border:none;border-radius:16px;min-height:68px;cursor:pointer;
+  }
+  .send:active{background:var(--main-dark)}
+  .send:disabled{background:#9fb294}
+
+  /* ===== 완료 화면 ===== */
+  #done{display:none;text-align:center;padding:40px 8px}
+  #done .big{font-size:70px;line-height:1}
+  #done h2{font-size:28px;font-weight:800;margin:16px 0 10px}
+  #done p{font-size:19px;color:var(--sub)}
+  #done .sum{
+    text-align:left;background:var(--card);border:2px solid var(--line);border-radius:18px;
+    padding:18px 20px;margin-top:24px;font-size:17px;white-space:pre-line;
+  }
+  .demo{display:none;background:#fff3cd;color:#7a5b00;font-size:15px;padding:10px 14px;border-radius:12px;margin-bottom:16px;text-align:center}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">DOG PALACE</div>
+  <h1>도그팰리스<br>입실 전 확인</h1>
+  <p>버튼만 눌러 주시면 끝나요 🐶</p>
+  <div class="slogan">강아지에게는 자유를, 보호자에게는 힐링을!</div>
+</header>
+
+<main class="wrap" id="form">
+  <div class="demo" id="demo">미리보기 모드입니다 (구글 시트 연결 전이라 실제로 저장되지 않아요)</div>
+
+  <div class="intro">
+    안녕하세요, <b>도그팰리스 해피콜 담당자</b>입니다 🤡<br>
+    미리 알려주시면 반려견과 보호자님께 꼭 맞춰 준비해 둘게요!
+  </div>
+
+  <!-- 1. 예약자 -->
+  <section class="q" id="q-person">
+    <div class="q-head"><span class="num">1</span><h2>예약하신 분</h2></div>
+    <p class="hint">누구의 예약인지 확인하기 위해 필요해요</p>
+    <label class="lb" for="name">예약자 성함 <span class="need">꼭 적어주세요</span></label>
+    <input type="text" id="name" placeholder="예) 홍길동" autocomplete="name">
+    <label class="lb" for="phone">휴대폰 번호 <span class="need">꼭 적어주세요</span></label>
+    <input type="tel" id="phone" placeholder="010-1234-5678" inputmode="numeric" autocomplete="tel">
+    <label class="lb" for="date">입실 날짜</label>
+    <input type="date" id="date">
+    <p class="err-msg">성함과 휴대폰 번호를 적어주세요</p>
+  </section>
+
+  <!-- 2. 반려견 -->
+  <section class="q" id="q-dogs">
+    <div class="q-head"><span class="num">2</span><h2>함께 오는 반려견</h2></div>
+    <p class="hint">여러 마리면 아래 <b>"한 마리 더 추가"</b>를 눌러주세요</p>
+    <div id="dogs"></div>
+    <button type="button" class="add-dog" id="addDog">＋ 반려견 한 마리 더 추가</button>
+    <p class="err-msg">반려견 이름을 적어주세요</p>
+  </section>
+
+  <!-- 3. 부가서비스 -->
+  <section class="q">
+    <div class="q-head"><span class="num">3</span><h2>미리 준비해 드릴까요?</h2></div>
+    <p class="hint">필요하신 만큼 ＋를 눌러주세요<br>여러 날 묵으시면 날짜 수만큼 늘려주셔도 돼요</p>
+
+    <div class="opt">
+      <div class="opt-top"><span class="opt-name">🔥 숯불 바베큐</span><span class="opt-price">1번 30,000원</span></div>
+      <p class="opt-desc" id="bbqDesc">바베큐장 + 숯불 + 석쇠 + 집게 + 토치</p>
+      <div class="stepper" data-step="bbq" data-min="0" data-max="5" data-unit="번" data-zero="필요 없어요">
+        <button type="button" class="minus" aria-label="줄이기">−</button>
+        <span class="val"></span>
+        <button type="button" class="plus" aria-label="늘리기">＋</button>
+      </div>
+      <div class="gift" id="gift">
+        🍖 평일(월~목)에는 숯불 구매 시 <b>고기세트</b>를 드려요!<br>
+        삼겹살+목살 500g, 쌈채소, 고추, 마늘, 허브솔트, 기름장, 쌈장
+      </div>
+    </div>
+
+    <div class="opt set-opt" id="setOpt" style="display:none">
+      <div class="opt-top"><span class="opt-name">🥩 2인 바베큐 정식</span><span class="opt-price">60,000원</span></div>
+      <p class="opt-desc">숯불세트 + 삼겹살·목살 600g, 쌈채소, 쌈장, 허브솔트, 마늘, 고추, 버섯, 수제소시지, 라면 1봉지, 햇반 2개, 바베큐장 이용</p>
+      <div class="stepper" data-step="bbqSet" data-min="0" data-max="5" data-unit="세트" data-zero="필요 없어요">
+        <button type="button" class="minus" aria-label="줄이기">−</button>
+        <span class="val"></span>
+        <button type="button" class="plus" aria-label="늘리기">＋</button>
+      </div>
+      <div class="gift show">
+        ‼️ 신선도를 위해 <b>사전 예약</b>으로만 준비해요.<br>입실 <b>전날까지</b> 꼭 알려주세요!<br>
+        <span style="font-weight:500">숯불세트가 들어 있어서 숯불은 따로 고르지 않으셔도 돼요</span>
+      </div>
+    </div>
+
+    <div class="opt">
+      <div class="opt-top"><span class="opt-name">🪵 불멍 장작</span><span class="opt-price">한 망 20,000원</span></div>
+      <p class="opt-desc">장작 10kg 한 망</p>
+      <div class="stepper" data-step="wood" data-min="0" data-max="5" data-unit="망" data-zero="필요 없어요">
+        <button type="button" class="minus" aria-label="줄이기">−</button>
+        <span class="val"></span>
+        <button type="button" class="plus" aria-label="늘리기">＋</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. 인원 -->
+  <section class="q">
+    <div class="q-head"><span class="num">4</span><h2>오시는 분은 모두 몇 분인가요?</h2></div>
+    <p class="hint">예약하신 분 포함, 사람 수만 세어주세요<br>기준 인원은 <b>2명</b>이에요 (아이도 포함돼요)<br>36개월 미만 유아는 추가 요금이 없어요</p>
+
+    <div class="opt">
+      <div class="opt-top"><span class="opt-name">👨‍👩 어른</span><span class="opt-price" style="font-size:17px">추가 1명당 25,000원</span></div>
+      <p class="opt-desc">중학생 이상</p>
+      <div class="stepper" data-step="adults" data-min="1" data-max="10" data-start="2" data-unit="명">
+        <button type="button" class="minus" aria-label="줄이기">−</button>
+        <span class="val"></span>
+        <button type="button" class="plus" aria-label="늘리기">＋</button>
+      </div>
+    </div>
+
+    <div class="opt">
+      <div class="opt-top"><span class="opt-name">🧒 아이</span><span class="opt-price" style="font-size:17px">추가 1명당 15,000원</span></div>
+      <p class="opt-desc">36개월부터 초등학생까지</p>
+      <div class="stepper" data-step="kids" data-min="0" data-max="10" data-unit="명" data-zero="없어요">
+        <button type="button" class="minus" aria-label="줄이기">−</button>
+        <span class="val"></span>
+        <button type="button" class="plus" aria-label="늘리기">＋</button>
+      </div>
+    </div>
+
+    <div class="opt">
+      <div class="opt-top"><span class="opt-name">👶 유아</span><span class="opt-price" style="font-size:17px;color:var(--main-dark)">무료</span></div>
+      <p class="opt-desc">36개월 미만 (추가 요금 없어요)</p>
+      <div class="stepper" data-step="infants" data-min="0" data-max="10" data-unit="명" data-zero="없어요">
+        <button type="button" class="minus" aria-label="줄이기">−</button>
+        <span class="val"></span>
+        <button type="button" class="plus" aria-label="늘리기">＋</button>
+      </div>
+    </div>
+
+    <div class="gift" id="peopleNote" style="margin-top:0"></div>
+  </section>
+
+  <!-- 5. 도착 시간 -->
+  <section class="q">
+    <div class="q-head"><span class="num">5</span><h2>몇 시쯤 도착하세요?</h2></div>
+    <p class="hint">입실은 오후 1시 30분부터 가능해요</p>
+    <div class="choices two" data-group="arrive">
+      <button type="button" class="chip" data-v="1시 30분~2시">1시 반~2시</button>
+      <button type="button" class="chip" data-v="2시~3시">2시~3시</button>
+      <button type="button" class="chip" data-v="3시~4시">3시~4시</button>
+      <button type="button" class="chip" data-v="4시~5시">4시~5시</button>
+      <button type="button" class="chip" data-v="5시~6시">5시~6시</button>
+      <button type="button" class="chip" data-v="6시 이후">6시 이후</button>
+    </div>
+    <div class="choices" data-group="arrive" style="margin-top:10px">
+      <button type="button" class="chip" data-v="아직 모름">아직 잘 모르겠어요</button>
+    </div>
+  </section>
+
+  <!-- 6. 출발 지역 -->
+  <section class="q">
+    <div class="q-head"><span class="num">6</span><h2>어디에서 출발하세요?</h2></div>
+    <p class="hint">길 안내와 도착 시간 예상에 도움이 돼요</p>
+    <input type="text" id="fromDetail" placeholder="예) 서울 강남, 수원, 천안">
+  </section>
+
+  <!-- 7. 요청사항 -->
+  <section class="q">
+    <div class="q-head"><span class="num">7</span><h2>요청하실 점이나 궁금하신 점</h2></div>
+    <p class="hint">없으시면 비워두셔도 괜찮아요</p>
+    <textarea id="memo" placeholder="예) 근처에 산책하기 좋은 곳이 있나요?"></textarea>
+  </section>
+
+  <a class="info-link" href="https://www.dogpalace.kr/index.php/information/" target="_blank" rel="noopener">
+    📋 가격·구성·유의사항 자세히 보기 →
+  </a>
+</main>
+
+<!-- 완료 화면 -->
+<main class="wrap" id="done">
+  <div class="big">🐶</div>
+  <h2>답변이 잘 전달되었어요!</h2>
+  <p>꼼꼼히 준비해 두고 기다릴게요.<br>조심히 오세요 😊</p>
+  <div class="sum" id="sum"></div>
+</main>
+
+<!-- 하단 보내기 -->
+<div class="bottom" id="bottom">
+  <div class="wrap">
+    <div class="total"><span>선택하신 추가 서비스 <small>(현장에서 카드/현금 결제 해주세요)</small></span><b id="total">0원</b></div>
+    <button type="button" class="send" id="send">답변 보내기</button>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   ★ 여기에 구글 Apps Script 웹앱 주소를 붙여 넣으세요 ★
+   비워두면 미리보기 모드로 동작합니다(저장 안 됨).
+   ========================================================= */
+const SCRIPT_URL = '';
+
+const PRICE = { bbq: 30000, bbqSet: 60000, wood: 20000, adult: 25000, kid: 15000 };
+const BASE_ADULTS = 2;   // 기준 인원(어른)
+const BREEDS = ['말티즈','푸들','포메라니안','비숑','시츄','치와와','웰시코기','진돗개','리트리버','소형믹스','중형믹스','대형믹스'];
+const CAUTIONS = ['특별히 없어요','짖음이 있어요','다른 강아지를 경계해요','낯선 사람을 경계해요','물 수 있어요','마킹을 해요','분리불안이 있어요','아픈 곳이 있어요'];
+
+const state = { bbq:0, bbqSet:0, arrive:'', wood:0, adults:2, kids:0, infants:0, peopleFee:0 };
+const $ = s => document.querySelector(s);
+
+if (!SCRIPT_URL) $('#demo').style.display = 'block';
+
+/* ----- 문자 링크로 미리 채우기: ?이름=홍길동&날짜=2026-11-20 ----- */
+const qs = new URLSearchParams(location.search);
+const pre = k => qs.get(k) || '';
+$('#name').value  = pre('이름')  || pre('name');
+$('#phone').value = pre('전화')  || pre('phone');
+$('#date').value  = pre('날짜')  || pre('date');
+
+/* ----- 휴대폰 번호 자동 하이픈 ----- */
+$('#phone').addEventListener('input', e => {
+  let d = e.target.value.replace(/\D/g,'').slice(0,11);
+  if (d.length > 7) d = d.replace(/(\d{3})(\d{3,4})(\d{4})/, '$1-$2-$3');
+  else if (d.length > 3) d = d.replace(/(\d{3})(\d+)/, '$1-$2');
+  e.target.value = d;
+});
+
+/* ----- 하나만 고르는 버튼 묶음 ----- */
+document.querySelectorAll('[data-group]').forEach(box => {
+  box.addEventListener('click', e => {
+    const b = e.target.closest('.chip'); if (!b) return;
+    const g = box.dataset.group;
+    const already = b.classList.contains('on');
+    document.querySelectorAll(`[data-group="${g}"] .chip`).forEach(c => c.classList.remove('on'));
+    if (!already) b.classList.add('on');
+    state[g] = already ? '' : b.dataset.v;
+    update();
+  });
+});
+
+/* ----- 숫자 올리고 내리기 ----- */
+function setupStepper(el, onChange){
+  const min = +el.dataset.min, max = +el.dataset.max;
+  let v = el.dataset.start !== undefined ? +el.dataset.start : min;
+  const render = () => {
+    el.querySelector('.val').textContent = (v === 0 && el.dataset.zero) ? el.dataset.zero : v + el.dataset.unit;
+    el.querySelector('.val').style.fontSize = (v === 0 && el.dataset.zero) ? '20px' : '';
+    el.querySelector('.minus').disabled = v <= min;
+    el.querySelector('.plus').disabled = v >= max;
+    onChange(v);
+  };
+  el.querySelector('.minus').onclick = () => { if (v > min) { v--; render(); } };
+  el.querySelector('.plus').onclick  = () => { if (v < max) { v++; render(); } };
+  render();
+  return { set: n => { v = n; render(); } };
+}
+const steppers = {};
+document.querySelectorAll('[data-step]').forEach(el => {
+  steppers[el.dataset.step] = setupStepper(el, v => { state[el.dataset.step] = v; update(); });
+});
+
+/* ----- 반려견 카드 ----- */
+let dogSeq = 0;
+function addDog(){
+  dogSeq++;
+  const id = 'dog' + dogSeq;
+  const n = document.querySelectorAll('.dog').length + 1;
+  const div = document.createElement('div');
+  div.className = 'dog'; div.id = id;
+  div.innerHTML = `
+    <div class="dog-top">
+      <span class="dog-title">🐾 반려견 ${n}</span>
+      ${n > 1 ? '<button type="button" class="dog-del">빼기</button>' : ''}
+    </div>
+    <label class="lb">이름 <span class="need">꼭 적어주세요</span></label>
+    <input type="text" class="d-name" placeholder="예) 초코">
+
+    <label class="lb">견종</label>
+    <div class="chips-small d-breeds">${BREEDS.map(b=>`<button type="button" class="chip" data-v="${b}">${b}</button>`).join('')}</div>
+    <input type="text" class="d-breed" placeholder="목록에 없으면 여기에 적어주세요" style="margin-top:10px">
+
+    <label class="lb">나이</label>
+    <div class="stepper d-age" data-min="0" data-max="25" data-start="3" data-unit="살" data-zero="1살 미만">
+      <button type="button" class="minus" aria-label="줄이기">−</button>
+      <span class="val"></span>
+      <button type="button" class="plus" aria-label="늘리기">＋</button>
+    </div>
+
+    <label class="lb">성별</label>
+    <div class="choices two d-sex">
+      <button type="button" class="chip" data-v="남아">남아</button>
+      <button type="button" class="chip" data-v="여아">여아</button>
+    </div>
+
+
+    <label class="lb">현장에서 알아두면 좋은 점 <span style="font-weight:400;color:var(--sub);font-size:16px">(여러 개 골라도 돼요)</span></label>
+    <div class="chips-small d-cautions">${CAUTIONS.map(c=>`<button type="button" class="chip" data-v="${c}">${c}</button>`).join('')}</div>
+    <input type="text" class="d-caution-etc" placeholder="더 알려주실 내용 (안 적으셔도 돼요)" style="margin-top:10px">
+  `;
+  $('#dogs').appendChild(div);
+  div.dataset.age = 3;
+
+  // 견종: 하나 고르면 입력칸에 채워짐
+  const breedInput = div.querySelector('.d-breed');
+  div.querySelector('.d-breeds').addEventListener('click', e => {
+    const b = e.target.closest('.chip'); if (!b) return;
+    const on = b.classList.contains('on');
+    div.querySelectorAll('.d-breeds .chip').forEach(c=>c.classList.remove('on'));
+    if (!on) { b.classList.add('on'); breedInput.value = b.dataset.v; } else breedInput.value = '';
+  });
+  breedInput.addEventListener('input', () => {
+    div.querySelectorAll('.d-breeds .chip').forEach(c=>c.classList.toggle('on', c.dataset.v === breedInput.value.trim()));
+  });
+
+  // 성별: 하나만
+  ['.d-sex'].forEach(sel => {
+    div.querySelector(sel).addEventListener('click', e => {
+      const b = e.target.closest('.chip'); if (!b) return;
+      const on = b.classList.contains('on');
+      div.querySelectorAll(sel+' .chip').forEach(c=>c.classList.remove('on'));
+      if (!on) b.classList.add('on');
+    });
+  });
+
+  // 주의사항: 여러 개, "특별히 없어요"는 나머지와 함께 선택 안 됨
+  div.querySelector('.d-cautions').addEventListener('click', e => {
+    const b = e.target.closest('.chip'); if (!b) return;
+    const none = b.dataset.v === '특별히 없어요';
+    b.classList.toggle('on');
+    if (b.classList.contains('on')) {
+      div.querySelectorAll('.d-cautions .chip').forEach(c => {
+        if (c !== b && (none || c.dataset.v === '특별히 없어요')) c.classList.remove('on');
+      });
+    }
+  });
+
+  setupStepper(div.querySelector('.d-age'), v => { div.dataset.age = v; });
+
+  const del = div.querySelector('.dog-del');
+  if (del) del.onclick = () => { div.remove(); renumber(); };
+}
+function renumber(){
+  document.querySelectorAll('.dog').forEach((d,i) => d.querySelector('.dog-title').textContent = '🐾 반려견 ' + (i+1));
+}
+$('#addDog').onclick = () => { addDog(); document.querySelector('.dog:last-child').scrollIntoView({behavior:'smooth',block:'start'}); };
+addDog();
+
+/* ----- 날짜가 월~목이면 고기세트 안내 ----- */
+$('#date').addEventListener('change', update);
+/* =========================================================
+   공휴일 목록 (대체공휴일·선거일 포함)
+   - 공휴일 당일, 그리고 다음 날이 공휴일인 날은 평일 혜택에서 빠져요
+   - 해마다 다음 해 공휴일을 아래에 추가해 주세요
+   - 임시공휴일이 새로 생기면 여기에 한 줄 추가하면 돼요
+   ========================================================= */
+const HOLIDAYS = new Set([
+  // 2026년
+  '2026-01-01',                              // 신정
+  '2026-02-16','2026-02-17','2026-02-18',    // 설날
+  '2026-03-01','2026-03-02',                 // 삼일절, 대체공휴일
+  '2026-05-01',                              // 노동절
+  '2026-05-05',                              // 어린이날
+  '2026-05-24','2026-05-25',                 // 부처님오신날, 대체공휴일
+  '2026-06-03',                              // 지방선거
+  '2026-06-06',                              // 현충일
+  '2026-07-17',                              // 제헌절
+  '2026-08-15','2026-08-17',                 // 광복절, 대체공휴일
+  '2026-09-24','2026-09-25','2026-09-26',    // 추석
+  '2026-10-03','2026-10-05',                 // 개천절, 대체공휴일
+  '2026-10-09',                              // 한글날
+  '2026-12-25',                              // 성탄절
+  // 2027년
+  '2027-01-01',                              // 신정
+  '2027-02-06','2027-02-07','2027-02-08','2027-02-09', // 설날, 대체공휴일
+  '2027-03-01',                              // 삼일절
+  '2027-05-01','2027-05-03',                 // 노동절, 대체공휴일
+  '2027-05-05',                              // 어린이날
+  '2027-05-13',                              // 부처님오신날
+  '2027-06-06',                              // 현충일
+  '2027-07-17','2027-07-19',                 // 제헌절, 대체공휴일
+  '2027-08-15','2027-08-16',                 // 광복절, 대체공휴일
+  '2027-09-14','2027-09-15','2027-09-16',    // 추석
+  '2027-10-03','2027-10-04',                 // 개천절, 대체공휴일
+  '2027-10-09','2027-10-11',                 // 한글날, 대체공휴일
+  '2027-12-25','2027-12-27',                 // 성탄절, 대체공휴일
+]);
+
+// 공휴일은 아니지만 평일 혜택에서 빼고 싶은 날 (예: 성수기 특정일)
+const NOT_WEEKDAY_EXTRA = new Set([
+  // '2026-12-24',
+]);
+
+function ymd(d){
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+// 평일(월~목) 입실이면서, 그날과 다음 날이 모두 공휴일이 아닐 때만 평일로 봄
+function isWeekdayStay(){
+  const v = $('#date').value; if (!v) return null;
+  const d = new Date(v + 'T00:00:00');
+  const day = d.getDay(); // 0일 1월 ... 4목
+  if (day < 1 || day > 4) return false;
+  if (HOLIDAYS.has(v) || NOT_WEEKDAY_EXTRA.has(v)) return false;
+  const next = new Date(d); next.setDate(d.getDate() + 1);
+  if (HOLIDAYS.has(ymd(next))) return false;
+  return true;
+}
+
+/* ----- 합계·안내 갱신 ----- */
+function update(){
+  // 기준 2명은 어른부터 채우고, 남는 자리는 아이가 채움 (기준 안의 아이는 무료)
+  const extraAdults = Math.max(0, state.adults - BASE_ADULTS);
+  const freeKids = Math.min(state.kids, Math.max(0, BASE_ADULTS - state.adults));
+  const paidKids = state.kids - freeKids;
+  const peopleFee = extraAdults * PRICE.adult + paidKids * PRICE.kid;
+  state.peopleFee = peopleFee;
+  const sum = state.bbq * PRICE.bbq + state.bbqSet * PRICE.bbqSet + state.wood * PRICE.wood + peopleFee;
+  $('#total').textContent = sum.toLocaleString() + '원';
+
+  const wk = isWeekdayStay();
+  const gift = $('#gift');
+  gift.classList.toggle('show', wk === true); // 평일 날짜를 골랐을 때만 (숯불 수량과 상관없이)
+  // 금·토·일·공휴일(전날 포함)을 고르면 2인 바베큐 정식 보이기, 아니면 숨기고 0으로
+  const showSet = wk === false;
+  $('#setOpt').style.display = showSet ? '' : 'none';
+  if (!showSet && state.bbqSet && steppers.bbqSet) steppers.bbqSet.set(0);
+  $('#bbqDesc').textContent = (showSet ? '고기 미포함 · ' : '') + '바베큐장 + 숯불 + 석쇠 + 집게 + 토치';
+  if (wk === true) gift.firstChild.textContent = '🍖 평일 입실이시네요! 숯불 구매 고객께 ';
+  else gift.firstChild.textContent = '🍖 평일(월~목)에는 숯불 구매 시 ';
+
+  const parts = [];
+  if (extraAdults) parts.push(`어른 ${extraAdults}명 × 25,000원`);
+  if (paidKids) parts.push(`아이 ${paidKids}명 × 15,000원`);
+  const note = $('#peopleNote');
+  note.classList.toggle('show', peopleFee > 0);
+  note.innerHTML = peopleFee > 0
+    ? `인원 추가 요금 <b>${peopleFee.toLocaleString()}원</b><br>${parts.join('<br>')}`
+      + (freeKids ? `<br><span style="font-weight:500">(아이 ${freeKids}명은 기준 인원 2명 안에 포함돼요)</span>` : '')
+    : '';
+}
+
+/* ----- 답변 모으기 ----- */
+function collect(){
+  const dogs = [...document.querySelectorAll('.dog')].map(d => {
+    const age = +d.dataset.age;
+    const pick = sel => [...d.querySelectorAll(sel+' .chip.on')].map(c=>c.dataset.v);
+    const cautions = pick('.d-cautions');
+    const etc = d.querySelector('.d-caution-etc').value.trim();
+    if (etc) cautions.push(etc);
+    return {
+      이름: d.querySelector('.d-name').value.trim(),
+      견종: d.querySelector('.d-breed').value.trim(),
+      나이: age === 0 ? '1살 미만' : age + '살',
+      성별: pick('.d-sex')[0] || '',
+      주의사항: cautions.join(', ')
+    };
+  });
+  const from = $('#fromDetail').value.trim();
+  return {
+    예약자: $('#name').value.trim(),
+    연락처: $('#phone').value.trim(),
+    입실일: $('#date').value,
+    반려견수: dogs.length,
+    반려견정보: dogs.map((d,i)=>`[${i+1}] ${d.이름} / ${d.견종||'-'} / ${d.나이} / ${d.성별||'-'} / 주의: ${d.주의사항||'-'}`).join('\n'),
+    숯불: state.bbq ? state.bbq + '번' : '없음',
+    바베큐정식: state.bbqSet ? state.bbqSet + '세트' : '없음',
+    장작: state.wood ? state.wood + '망' : '없음',
+    어른: state.adults + '명',
+    아이: state.kids + '명',
+    유아: state.infants + '명',
+    인원추가요금: state.peopleFee.toLocaleString() + '원',
+    도착예정: state.arrive || '미선택',
+    출발지역: from || '미기재',
+    요청사항: $('#memo').value.trim(),
+    추가서비스금액: $('#total').textContent
+  };
+}
+
+/* ----- 꼭 필요한 칸 확인 ----- */
+function check(){
+  let first = null;
+  const person = $('#q-person');
+  const okPerson = $('#name').value.trim() && $('#phone').value.replace(/\D/g,'').length >= 10;
+  person.classList.toggle('error', !okPerson);
+  if (!okPerson) first = person;
+
+  const dogsBox = $('#q-dogs');
+  const okDogs = [...document.querySelectorAll('.d-name')].every(i => i.value.trim());
+  dogsBox.classList.toggle('error', !okDogs);
+  if (!okDogs && !first) first = dogsBox;
+
+  if (first) first.scrollIntoView({behavior:'smooth', block:'start'});
+  return !first;
+}
+
+/* ----- 보내기 ----- */
+$('#send').onclick = async () => {
+  if (!check()) return;
+  const data = collect();
+  const btn = $('#send');
+  btn.disabled = true; btn.textContent = '보내는 중이에요…';
+  try {
+    if (SCRIPT_URL) {
+      await fetch(SCRIPT_URL, {
+        method:'POST', mode:'no-cors',
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify(data)
+      });
+    } else {
+      console.log('미리보기 모드 - 보낼 내용:', data);
+      await new Promise(r => setTimeout(r, 600));
+    }
+    showDone(data);
+  } catch (err) {
+    btn.disabled = false; btn.textContent = '답변 보내기';
+    alert('전송이 잘 안 됐어요. 잠시 후 다시 눌러주세요.\n계속 안 되면 문자로 답장 주셔도 괜찮아요!');
+  }
+};
+
+function showDone(d){
+  $('#form').style.display = 'none';
+  $('#bottom').style.display = 'none';
+  $('#done').style.display = 'block';
+  $('#sum').textContent =
+`예약자: ${d.예약자} (${d.연락처})
+입실일: ${d.입실일 || '-'}
+반려견:
+${d.반려견정보}
+숯불: ${d.숯불}  ·  바베큐 정식: ${d.바베큐정식}  ·  장작: ${d.장작}
+인원: 어른 ${d.어른}, 아이 ${d.아이}, 유아 ${d.유아} (추가 요금 ${d.인원추가요금})
+도착: ${d.도착예정}  ·  출발: ${d.출발지역}
+요청사항: ${d.요청사항 || '없음'}
+
+현장 결제 금액: ${d.추가서비스금액} (카드/현금)`;
+  window.scrollTo(0,0);
+}
+
+/* 입력칸을 채우면 빨간 표시 없애기 */
+document.addEventListener('input', () => {
+  if ($('#name').value.trim() && $('#phone').value.replace(/\D/g,'').length >= 10) $('#q-person').classList.remove('error');
+  if ([...document.querySelectorAll('.d-name')].every(i => i.value.trim())) $('#q-dogs').classList.remove('error');
+});
+
+update();
+</script>
+</body>
+</html>
