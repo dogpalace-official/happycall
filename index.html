@@ -318,15 +318,15 @@
     <div class="q-head"><span class="num">5</span><h2>몇 시쯤 도착하세요?</h2></div>
     <p class="hint">입실은 오후 1시 30분부터 가능해요</p>
     <div class="choices two" data-group="arrive">
-      <button type="button" class="chip" data-v="13시 30분">오후 1시 30분</button>
-      <button type="button" class="chip" data-v="14시">오후 2시쯤</button>
-      <button type="button" class="chip" data-v="15시">오후 3시쯤</button>
-      <button type="button" class="chip" data-v="16시">오후 4시쯤</button>
-      <button type="button" class="chip" data-v="17시">오후 5시쯤</button>
-      <button type="button" class="chip" data-v="18시 이후">오후 6시 이후</button>
+      <button type="button" class="chip" data-v="1시 30분~2시">1시 반~2시</button>
+      <button type="button" class="chip" data-v="2시~3시">2시~3시</button>
+      <button type="button" class="chip" data-v="3시~4시">3시~4시</button>
+      <button type="button" class="chip" data-v="4시~5시">4시~5시</button>
+      <button type="button" class="chip" data-v="5시~6시">5시~6시</button>
+      <button type="button" class="chip" data-v="6시 이후">6시 이후</button>
     </div>
     <div class="choices" data-group="arrive" style="margin-top:10px">
-      <button type="button" class="chip" data-v="미정">아직 잘 모르겠어요</button>
+      <button type="button" class="chip" data-v="아직 모름">아직 잘 모르겠어요</button>
     </div>
   </section>
 
@@ -712,7 +712,6 @@ function collect(){
     입실일: $('#date').value,
     퇴실일: $('#dateOut').value,
     객실: pre('객실') || pre('room'),
-    예약채널: pre('채널'),
     숙박기간: (s => s.ok ? `${s.nights}박 ${s.nights+1}일` : '')(stayInfo()),
     반려견수: dogs.length,
     반려견정보: dogs.map((d,i)=>`[${i+1}] ${d.이름} / ${d.견종||'-'} / ${d.나이} / ${d.성별||'-'} / 주의: ${d.주의사항||'-'}`).join('\n'),
