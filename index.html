@@ -711,6 +711,7 @@ function collect(){
     연락처: $('#phone').value.trim(),
     입실일: $('#date').value,
     퇴실일: $('#dateOut').value,
+    객실: pre('객실') || pre('room'),
     숙박기간: (s => s.ok ? `${s.nights}박 ${s.nights+1}일` : '')(stayInfo()),
     반려견수: dogs.length,
     반려견정보: dogs.map((d,i)=>`[${i+1}] ${d.이름} / ${d.견종||'-'} / ${d.나이} / ${d.성별||'-'} / 주의: ${d.주의사항||'-'}`).join('\n'),
