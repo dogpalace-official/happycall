@@ -165,6 +165,17 @@
   #done .big{font-size:70px;line-height:1}
   #done h2{font-size:28px;font-weight:800;margin:16px 0 10px}
   #done p{font-size:19px;color:var(--sub)}
+  .warn{background:#fdecea;color:#9b2c1f;border-radius:14px;padding:12px 16px;font-size:17px;margin:-4px 0 16px}
+  .manager{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:22px 18px;margin-top:24px}
+  .manager p{color:var(--ink) !important;font-size:18px !important}
+  .manager .see{margin-top:14px;font-weight:700}
+  .call{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+    margin-top:16px;background:var(--main);color:#fff;text-decoration:none;
+    border-radius:16px;min-height:76px;font-size:22px;font-weight:800;
+  }
+  .call span{font-size:18px;font-weight:600;opacity:.9}
+  .call:active{background:var(--main-dark)}
   #done .sum{
     text-align:left;background:var(--card);border:2px solid var(--line);border-radius:18px;
     padding:18px 20px;margin-top:24px;font-size:17px;white-space:pre-line;
@@ -215,6 +226,7 @@
   <section class="q">
     <div class="q-head"><span class="num">3</span><h2>미리 준비해 드릴까요?</h2></div>
     <p class="hint">필요하신 만큼 ＋를 눌러주세요<br>여러 날 묵으시면 날짜 수만큼 늘려주셔도 돼요</p>
+    <div class="warn">🚫 안전을 위해 <b>외부 숯불·장작은 가져오실 수 없어요</b></div>
 
     <div class="opt">
       <div class="opt-top"><span class="opt-name">🔥 숯불 바베큐</span><span class="opt-price">1번 30,000원</span></div>
@@ -324,6 +336,33 @@
     <textarea id="memo" placeholder="예) 근처에 산책하기 좋은 곳이 있나요?"></textarea>
   </section>
 
+  <!-- 8. 알게 된 경로 -->
+  <section class="q">
+    <div class="q-head"><span class="num">8</span><h2>도그팰리스를 어떻게 알게 되셨어요?</h2></div>
+    <p class="hint">번거로우시겠지만 저희가 자료를 모으고 있어서요 😅<br>해당되는 것을 모두 눌러주세요</p>
+
+    <label class="lb">어디에서 보셨나요?</label>
+    <div class="chips-small multi" id="srcChannel">
+      <button type="button" class="chip" data-v="네이버">네이버</button>
+      <button type="button" class="chip" data-v="구글">구글</button>
+      <button type="button" class="chip" data-v="야놀자">야놀자</button>
+      <button type="button" class="chip" data-v="반려생활">반려생활</button>
+      <button type="button" class="chip" data-v="인스타그램">인스타그램</button>
+    </div>
+
+    <label class="lb">검색하셨다면 어떤 말로 찾으셨나요?</label>
+    <div class="chips-small multi" id="srcKeyword">
+      <button type="button" class="chip" data-v="애견펜션">애견펜션</button>
+      <button type="button" class="chip" data-v="애견동반펜션">애견동반펜션</button>
+      <button type="button" class="chip" data-v="애견동반숙소">애견동반숙소</button>
+      <button type="button" class="chip" data-v="당진 애견펜션">당진 애견펜션</button>
+      <button type="button" class="chip" data-v="서울근교 애견펜션">서울근교 애견펜션</button>
+    </div>
+
+    <label class="lb" for="srcEtc">위에 없으면 직접 적어주세요</label>
+    <input type="text" id="srcEtc" placeholder="예) 지인 추천, 블로그 후기">
+  </section>
+
   <a class="info-link" href="https://www.dogpalace.kr/index.php/information/" target="_blank" rel="noopener">
     📋 가격·구성·유의사항 자세히 보기 →
   </a>
@@ -334,6 +373,11 @@
   <div class="big">🐶</div>
   <h2>답변이 잘 전달되었어요!</h2>
   <p>꼼꼼히 준비해 두고 기다릴게요.<br>조심히 오세요 😊</p>
+  <div class="manager">
+    <p>확인 감사합니다 😃<br>저는 예약 담당자라, 현장에서는 <b>점장님</b>께 연락 주시면 더 빠르게 답변 받으실 수 있어요.</p>
+    <a class="call" href="tel:01026737955">📞 점장님께 전화하기<span>010-2673-7955</span></a>
+    <p class="see">당진에서 뵙겠습니다 🙋‍♀️</p>
+  </div>
   <div class="sum" id="sum"></div>
 </main>
 
@@ -389,6 +433,14 @@ document.querySelectorAll('[data-group]').forEach(box => {
     update();
   });
 });
+
+/* ----- 여러 개 고르는 버튼 (알게 된 경로) ----- */
+document.querySelectorAll('.multi').forEach(box => {
+  box.addEventListener('click', e => {
+    const b = e.target.closest('.chip'); if (b) b.classList.toggle('on');
+  });
+});
+const picked = id => [...document.querySelectorAll('#' + id + ' .chip.on')].map(c => c.dataset.v).join(', ');
 
 /* ----- 숫자 올리고 내리기 ----- */
 function setupStepper(el, onChange){
@@ -624,6 +676,9 @@ function collect(){
     도착예정: state.arrive || '미선택',
     출발지역: from || '미기재',
     요청사항: $('#memo').value.trim(),
+    알게된경로: picked('srcChannel'),
+    검색키워드: picked('srcKeyword'),
+    기타경로: $('#srcEtc').value.trim(),
     추가서비스금액: $('#total').textContent
   };
 }
