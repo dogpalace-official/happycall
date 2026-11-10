@@ -218,6 +218,15 @@
     <label class="lb" for="dateOut">퇴실 날짜 <span class="need">꼭 골라주세요</span></label>
     <input type="date" id="dateOut">
     <div class="stay" id="stayNote"></div>
+    <label class="lb">예약하신 객실</label>
+    <div class="choices two" data-group="room">
+      <button type="button" class="chip" data-v="팰리스 100 (3동)">팰리스 100<br>(3동)</button>
+      <button type="button" class="chip" data-v="팰리스 170 (1동)">팰리스 170<br>(1동)</button>
+      <button type="button" class="chip" data-v="팰리스 200 (2동)">팰리스 200<br>(2동)</button>
+      <button type="button" class="chip" data-v="팰리스 250 (4동)">팰리스 250<br>(4동)</button>
+      <button type="button" class="chip" data-v="팰리스 300 (5동)">팰리스 300<br>(5동)</button>
+      <button type="button" class="chip" data-v="">잘 모르겠어요</button>
+    </div>
     <p class="err-msg" id="personErr">성함, 휴대폰 번호, 입실·퇴실 날짜를 확인해 주세요</p>
   </section>
 
@@ -465,6 +474,12 @@ $('#name').value  = pre('이름')  || pre('name');
 $('#phone').value = pre('전화')  || pre('phone');
 $('#date').value  = pre('날짜')  || pre('date');
 $('#dateOut').value = pre('퇴실') || pre('out');
+(() => {
+  const r = (pre('객실') || pre('room')).replace(/\D/g, '');
+  if (!r) return;
+  const b = [...document.querySelectorAll('[data-group="room"] .chip')].find(c => c.dataset.v.includes(r));
+  if (b) { b.classList.add('on'); state.room = b.dataset.v; }
+})();
 
 /* ----- 휴대폰 번호 자동 하이픈 ----- */
 $('#phone').addEventListener('input', e => {
@@ -711,7 +726,7 @@ function collect(){
     연락처: $('#phone').value.trim(),
     입실일: $('#date').value,
     퇴실일: $('#dateOut').value,
-    객실: pre('객실') || pre('room'),
+    객실: state.room || '',
     숙박기간: (s => s.ok ? `${s.nights}박 ${s.nights+1}일` : '')(stayInfo()),
     반려견수: dogs.length,
     반려견정보: dogs.map((d,i)=>`[${i+1}] ${d.이름} / ${d.견종||'-'} / ${d.나이} / ${d.성별||'-'} / 주의: ${d.주의사항||'-'}`).join('\n'),
@@ -778,7 +793,7 @@ function showDone(d){
   $('#bottom').style.display = 'none';
   $('#done').style.display = 'block';
   $('#sum').textContent =
-`예약자: ${d.예약자} (${d.연락처})
+`예약자: ${d.예약자} (${d.연락처})${d.객실 ? '\n객실: ' + d.객실 : ''}
 숙박: ${d.입실일} ~ ${d.퇴실일} (${d.숙박기간})
 반려견:
 ${d.반려견정보}
