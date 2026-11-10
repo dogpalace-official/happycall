@@ -165,6 +165,11 @@
   #done .big{font-size:70px;line-height:1}
   #done h2{font-size:28px;font-weight:800;margin:16px 0 10px}
   #done p{font-size:19px;color:var(--sub)}
+  .stay{display:none;margin-top:12px;border-radius:14px;padding:14px 16px;font-size:18px;font-weight:600;
+        background:var(--main-soft);color:var(--main-dark);text-align:center}
+  .stay.show{display:block}
+  .stay b{font-size:24px;font-weight:800;display:block}
+  .stay.bad{background:#fdecea;color:#9b2c1f}
   .warn{background:#fdecea;color:#9b2c1f;border-radius:14px;padding:12px 16px;font-size:17px;margin:-4px 0 16px}
   .manager{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:22px 18px;margin-top:24px}
   .manager p{color:var(--ink) !important;font-size:18px !important}
@@ -208,9 +213,12 @@
     <input type="text" id="name" placeholder="예) 홍길동" autocomplete="name">
     <label class="lb" for="phone">휴대폰 번호 <span class="need">꼭 적어주세요</span></label>
     <input type="tel" id="phone" placeholder="010-1234-5678" inputmode="numeric" autocomplete="tel">
-    <label class="lb" for="date">입실 날짜</label>
+    <label class="lb" for="date">입실 날짜 <span class="need">꼭 골라주세요</span></label>
     <input type="date" id="date">
-    <p class="err-msg">성함과 휴대폰 번호를 적어주세요</p>
+    <label class="lb" for="dateOut">퇴실 날짜 <span class="need">꼭 골라주세요</span></label>
+    <input type="date" id="dateOut">
+    <div class="stay" id="stayNote"></div>
+    <p class="err-msg" id="personErr">성함, 휴대폰 번호, 입실·퇴실 날짜를 확인해 주세요</p>
   </section>
 
   <!-- 2. 반려견 -->
@@ -398,6 +406,50 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwmTIbqF9NfuzD_bxxi_
 
 const PRICE = { bbq: 30000, bbqSet: 60000, wood: 20000, adult: 25000, kid: 15000 };
 const BASE_ADULTS = 2;   // 기준 인원(어른)
+
+/* =========================================================
+   공휴일 목록 (대체공휴일·선거일 포함)
+   - 공휴일 당일, 그리고 다음 날이 공휴일인 날은 평일 혜택에서 빠져요
+   - 해마다 다음 해 공휴일을 아래에 추가해 주세요
+   - 임시공휴일이 새로 생기면 여기에 한 줄 추가하면 돼요
+   ========================================================= */
+const HOLIDAYS = new Set([
+  // 2026년
+  '2026-01-01',                              // 신정
+  '2026-02-16','2026-02-17','2026-02-18',    // 설날
+  '2026-03-01','2026-03-02',                 // 삼일절, 대체공휴일
+  '2026-05-01',                              // 노동절
+  '2026-05-05',                              // 어린이날
+  '2026-05-24','2026-05-25',                 // 부처님오신날, 대체공휴일
+  '2026-06-03',                              // 지방선거
+  '2026-06-06',                              // 현충일
+  '2026-07-17',                              // 제헌절
+  '2026-08-15','2026-08-17',                 // 광복절, 대체공휴일
+  '2026-09-24','2026-09-25','2026-09-26',    // 추석
+  '2026-10-03','2026-10-05',                 // 개천절, 대체공휴일
+  '2026-10-09',                              // 한글날
+  '2026-12-25',                              // 성탄절
+  // 2027년
+  '2027-01-01',                              // 신정
+  '2027-02-06','2027-02-07','2027-02-08','2027-02-09', // 설날, 대체공휴일
+  '2027-03-01',                              // 삼일절
+  '2027-05-01','2027-05-03',                 // 노동절, 대체공휴일
+  '2027-05-05',                              // 어린이날
+  '2027-05-13',                              // 부처님오신날
+  '2027-06-06',                              // 현충일
+  '2027-07-17','2027-07-19',                 // 제헌절, 대체공휴일
+  '2027-08-15','2027-08-16',                 // 광복절, 대체공휴일
+  '2027-09-14','2027-09-15','2027-09-16',    // 추석
+  '2027-10-03','2027-10-04',                 // 개천절, 대체공휴일
+  '2027-10-09','2027-10-11',                 // 한글날, 대체공휴일
+  '2027-12-25','2027-12-27',                 // 성탄절, 대체공휴일
+]);
+
+// 공휴일은 아니지만 평일 혜택에서 빼고 싶은 날 (예: 성수기 특정일)
+const NOT_WEEKDAY_EXTRA = new Set([
+  // '2026-12-24',
+]);
+
 const BREEDS = ['말티즈','푸들','포메라니안','비숑','시츄','치와와','웰시코기','진돗개','리트리버','소형믹스','중형믹스','대형믹스'];
 const CAUTIONS = ['특별히 없어요','짖음이 있어요','다른 강아지를 경계해요','낯선 사람을 경계해요','물 수 있어요','마킹을 해요','분리불안이 있어요','아픈 곳이 있어요'];
 
@@ -412,6 +464,7 @@ const pre = k => qs.get(k) || '';
 $('#name').value  = pre('이름')  || pre('name');
 $('#phone').value = pre('전화')  || pre('phone');
 $('#date').value  = pre('날짜')  || pre('date');
+$('#dateOut').value = pre('퇴실') || pre('out');
 
 /* ----- 휴대폰 번호 자동 하이픈 ----- */
 $('#phone').addEventListener('input', e => {
@@ -550,57 +603,39 @@ $('#addDog').onclick = () => { addDog(); document.querySelector('.dog:last-child
 addDog();
 
 /* ----- 날짜가 월~목이면 고기세트 안내 ----- */
-$('#date').addEventListener('change', update);
-/* =========================================================
-   공휴일 목록 (대체공휴일·선거일 포함)
-   - 공휴일 당일, 그리고 다음 날이 공휴일인 날은 평일 혜택에서 빠져요
-   - 해마다 다음 해 공휴일을 아래에 추가해 주세요
-   - 임시공휴일이 새로 생기면 여기에 한 줄 추가하면 돼요
-   ========================================================= */
-const HOLIDAYS = new Set([
-  // 2026년
-  '2026-01-01',                              // 신정
-  '2026-02-16','2026-02-17','2026-02-18',    // 설날
-  '2026-03-01','2026-03-02',                 // 삼일절, 대체공휴일
-  '2026-05-01',                              // 노동절
-  '2026-05-05',                              // 어린이날
-  '2026-05-24','2026-05-25',                 // 부처님오신날, 대체공휴일
-  '2026-06-03',                              // 지방선거
-  '2026-06-06',                              // 현충일
-  '2026-07-17',                              // 제헌절
-  '2026-08-15','2026-08-17',                 // 광복절, 대체공휴일
-  '2026-09-24','2026-09-25','2026-09-26',    // 추석
-  '2026-10-03','2026-10-05',                 // 개천절, 대체공휴일
-  '2026-10-09',                              // 한글날
-  '2026-12-25',                              // 성탄절
-  // 2027년
-  '2027-01-01',                              // 신정
-  '2027-02-06','2027-02-07','2027-02-08','2027-02-09', // 설날, 대체공휴일
-  '2027-03-01',                              // 삼일절
-  '2027-05-01','2027-05-03',                 // 노동절, 대체공휴일
-  '2027-05-05',                              // 어린이날
-  '2027-05-13',                              // 부처님오신날
-  '2027-06-06',                              // 현충일
-  '2027-07-17','2027-07-19',                 // 제헌절, 대체공휴일
-  '2027-08-15','2027-08-16',                 // 광복절, 대체공휴일
-  '2027-09-14','2027-09-15','2027-09-16',    // 추석
-  '2027-10-03','2027-10-04',                 // 개천절, 대체공휴일
-  '2027-10-09','2027-10-11',                 // 한글날, 대체공휴일
-  '2027-12-25','2027-12-27',                 // 성탄절, 대체공휴일
-]);
-
-// 공휴일은 아니지만 평일 혜택에서 빼고 싶은 날 (예: 성수기 특정일)
-const NOT_WEEKDAY_EXTRA = new Set([
-  // '2026-12-24',
-]);
+$('#date').addEventListener('change', () => {
+  // 입실일을 고르면 퇴실은 그다음 날부터 고를 수 있게, 비어 있거나 앞서 있으면 다음 날로 채움
+  const v = $('#date').value;
+  if (v) {
+    const next = ymd(addDays(v, 1));
+    $('#dateOut').min = next;
+    if (!$('#dateOut').value || $('#dateOut').value <= v) $('#dateOut').value = next;
+  }
+  update();
+});
+$('#dateOut').addEventListener('change', update);
 
 function ymd(d){
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
 
-// 평일(월~목) 입실이면서, 그날과 다음 날이 모두 공휴일이 아닐 때만 평일로 봄
-function isWeekdayStay(){
-  const v = $('#date').value; if (!v) return null;
+function addDays(v, n){ const d = new Date(v + 'T00:00:00'); d.setDate(d.getDate() + n); return d; }
+function prettyDate(v){ const d = new Date(v + 'T00:00:00'); return `${d.getMonth()+1}월 ${d.getDate()}일(${'일월화수목금토'[d.getDay()]})`; }
+
+// 숙박 정보: 몇 박인지, 그중 평일 밤·주말 밤이 몇 번인지
+function stayInfo(){
+  const a = $('#date').value, b = $('#dateOut').value;
+  if (!a) return { ok:false, empty:true };
+  if (!b) return { ok:false, noOut:true };
+  const nights = Math.round((new Date(b+'T00:00:00') - new Date(a+'T00:00:00')) / 86400000);
+  if (nights < 1) return { ok:false, bad:true };
+  let weekdayN = 0;
+  for (let i = 0; i < nights; i++) if (isWeekdayNight(ymd(addDays(a, i)))) weekdayN++;
+  return { ok:true, nights, weekdayN, weekendN: nights - weekdayN, a, b };
+}
+
+// 그날 밤이 평일 요금인지: 월~목이면서, 그날과 다음 날이 모두 공휴일이 아닐 때만 평일
+function isWeekdayNight(v){
   const d = new Date(v + 'T00:00:00');
   const day = d.getDay(); // 0일 1월 ... 4목
   if (day < 1 || day > 4) return false;
@@ -621,15 +656,26 @@ function update(){
   const sum = state.bbq * PRICE.bbq + state.bbqSet * PRICE.bbqSet + state.wood * PRICE.wood + peopleFee;
   $('#total').textContent = sum.toLocaleString() + '원';
 
-  const wk = isWeekdayStay();
+  // 숙박 기간 표시
+  const st = stayInfo();
+  const stayEl = $('#stayNote');
+  stayEl.classList.toggle('show', !st.empty && !st.noOut);
+  stayEl.classList.toggle('bad', !!st.bad);
+  if (st.ok) stayEl.innerHTML = `<b>${st.nights}박 ${st.nights+1}일</b>${prettyDate(st.a)} ~ ${prettyDate(st.b)}`;
+  else if (st.bad) stayEl.textContent = '퇴실 날짜는 입실 날짜 다음 날부터 고를 수 있어요';
+
+  // 평일 밤이 하루라도 있으면 고기세트 안내, 주말(금·토·일·공휴일 전날) 밤이 있으면 2인 바베큐 정식
+  const one = st.ok ? null : ($('#date').value ? isWeekdayNight($('#date').value) : null); // 퇴실일 없을 때는 입실일로만
+  const hasWeekday = st.ok ? st.weekdayN > 0 : one === true;
+  const hasWeekend = st.ok ? st.weekendN > 0 : one === false;
+  const wk = hasWeekday ? true : null;
   const gift = $('#gift');
-  gift.classList.toggle('show', wk === true); // 평일 날짜를 골랐을 때만 (숯불 수량과 상관없이)
-  // 금·토·일·공휴일(전날 포함)을 고르면 2인 바베큐 정식 보이기, 아니면 숨기고 0으로
-  const showSet = wk === false;
+  gift.classList.toggle('show', hasWeekday);
+  const showSet = hasWeekend;
   $('#setOpt').style.display = showSet ? '' : 'none';
   if (!showSet && state.bbqSet && steppers.bbqSet) steppers.bbqSet.set(0);
   $('#bbqDesc').textContent = (showSet ? '고기 미포함 · ' : '') + '바베큐장 + 숯불 + 석쇠 + 집게 + 토치';
-  if (wk === true) gift.firstChild.textContent = '🍖 평일 입실이시네요! 숯불 구매 고객께 ';
+  if (wk === true) gift.firstChild.textContent = (st.ok && st.nights > 1) ? '🍖 평일 숙박이 포함돼 있어요! 평일 숯불 구매 고객께 ' : '🍖 평일 입실이시네요! 숯불 구매 고객께 ';
   else gift.firstChild.textContent = '🍖 평일(월~목)에는 숯불 구매 시 ';
 
   const parts = [];
@@ -664,6 +710,8 @@ function collect(){
     예약자: $('#name').value.trim(),
     연락처: $('#phone').value.trim(),
     입실일: $('#date').value,
+    퇴실일: $('#dateOut').value,
+    숙박기간: (s => s.ok ? `${s.nights}박 ${s.nights+1}일` : '')(stayInfo()),
     반려견수: dogs.length,
     반려견정보: dogs.map((d,i)=>`[${i+1}] ${d.이름} / ${d.견종||'-'} / ${d.나이} / ${d.성별||'-'} / 주의: ${d.주의사항||'-'}`).join('\n'),
     숯불: state.bbq ? state.bbq + '번' : '없음',
@@ -687,7 +735,7 @@ function collect(){
 function check(){
   let first = null;
   const person = $('#q-person');
-  const okPerson = $('#name').value.trim() && $('#phone').value.replace(/\D/g,'').length >= 10;
+  const okPerson = $('#name').value.trim() && $('#phone').value.replace(/\D/g,'').length >= 10 && stayInfo().ok;
   person.classList.toggle('error', !okPerson);
   if (!okPerson) first = person;
 
@@ -730,7 +778,7 @@ function showDone(d){
   $('#done').style.display = 'block';
   $('#sum').textContent =
 `예약자: ${d.예약자} (${d.연락처})
-입실일: ${d.입실일 || '-'}
+숙박: ${d.입실일} ~ ${d.퇴실일} (${d.숙박기간})
 반려견:
 ${d.반려견정보}
 숯불: ${d.숯불}  ·  바베큐 정식: ${d.바베큐정식}  ·  장작: ${d.장작}
@@ -743,11 +791,12 @@ ${d.반려견정보}
 }
 
 /* 입력칸을 채우면 빨간 표시 없애기 */
-document.addEventListener('input', () => {
-  if ($('#name').value.trim() && $('#phone').value.replace(/\D/g,'').length >= 10) $('#q-person').classList.remove('error');
+['input','change'].forEach(ev => document.addEventListener(ev, () => {
+  if ($('#name').value.trim() && $('#phone').value.replace(/\D/g,'').length >= 10 && stayInfo().ok) $('#q-person').classList.remove('error');
   if ([...document.querySelectorAll('.d-name')].every(i => i.value.trim())) $('#q-dogs').classList.remove('error');
-});
+}));
 
+if ($('#date').value) $('#date').dispatchEvent(new Event('change'));
 update();
 </script>
 </body>
