@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>도그팰리스 만족도 설문</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root{
+    --bg:#f6f1e9; --card:#ffffff; --ink:#2b2420; --sub:#6b5f55; --line:#e4d9ca;
+    --main:#5b7a4a; --main-dark:#46613a; --main-soft:#eaf1e4;
+    --accent:#c9772f; --accent-soft:#fbeedf; --danger:#c0392b; --star:#f2b01e;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{font-family:"Pretendard",-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+       background:var(--bg);color:var(--ink);font-size:19px;line-height:1.6;padding-bottom:120px}
+  .wrap{max-width:560px;margin:0 auto;padding:0 16px}
+
+  header{background:var(--main);color:#fff;text-align:center;padding:34px 20px 30px;border-radius:0 0 28px 28px;margin-bottom:22px}
+  .brand{font-size:15px;letter-spacing:.25em;opacity:.85;font-weight:600}
+  header h1{font-size:29px;font-weight:800;margin:6px 0 10px;line-height:1.3}
+  header p{font-size:18px;opacity:.95}
+  .slogan{margin-top:14px;font-size:15px;opacity:.8}
+
+  .intro{background:var(--card);border-radius:20px;padding:18px 20px;margin-bottom:18px;border:2px solid var(--line);font-size:17px}
+  .intro b{color:var(--main-dark)}
+  .anon{display:inline-block;margin-top:8px;background:var(--main-soft);color:var(--main-dark);font-weight:700;border-radius:10px;padding:4px 10px;font-size:15px}
+
+  .q{background:var(--card);border-radius:22px;padding:24px 20px;margin-bottom:18px;border:2px solid var(--line)}
+  .q.error{border-color:var(--danger)}
+  .q-head{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+  .num{flex:none;width:38px;height:38px;border-radius:50%;background:var(--main);color:#fff;font-weight:800;font-size:19px;display:flex;align-items:center;justify-content:center}
+  .q h2{font-size:22px;font-weight:800;line-height:1.35}
+  .hint{color:var(--sub);font-size:16px;margin:4px 0 16px}
+  .err-msg{display:none;color:var(--danger);font-weight:700;font-size:17px;margin-top:10px}
+  .q.error .err-msg{display:block}
+
+  /* 별점 */
+  .stars{display:flex;justify-content:center;gap:6px}
+  .stars button{background:none;border:none;font-size:52px;line-height:1;color:#ddd3c6;cursor:pointer;padding:2px;-webkit-tap-highlight-color:transparent}
+  .stars button.on{color:var(--star)}
+  .star-label{text-align:center;font-size:19px;font-weight:700;margin-top:8px;min-height:30px;color:var(--main-dark)}
+
+  /* 항목별 얼굴 */
+  .item{border-top:1px dashed var(--line);padding:14px 0}
+  .item:first-of-type{border-top:none;padding-top:0}
+  .item-name{font-weight:700;font-size:18px;margin-bottom:8px}
+  .faces{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+  .faces.five{grid-template-columns:repeat(5,1fr)}
+  .face{font:inherit;background:#fffdfa;border:2px solid var(--line);border-radius:14px;min-height:66px;cursor:pointer;
+        display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px 2px;-webkit-tap-highlight-color:transparent}
+  .face .e{font-size:26px;line-height:1.1}
+  .face .t{font-size:13px;font-weight:700;color:var(--sub);margin-top:2px;white-space:nowrap}
+  .face.on{background:var(--main);border-color:var(--main)}
+  .face.on .t{color:#fff}
+
+  /* 버튼 */
+  .choices{display:grid;gap:10px}
+  .choices.two{grid-template-columns:1fr 1fr}
+  .chip{position:relative;word-break:keep-all;font:inherit;font-size:18px;font-weight:700;color:var(--ink);background:#fffdfa;border:2px solid var(--line);
+        border-radius:14px;min-height:58px;padding:10px 12px;cursor:pointer;display:flex;align-items:center;justify-content:center;text-align:center;gap:6px;
+        -webkit-tap-highlight-color:transparent}
+  .chip.on{background:var(--main);border-color:var(--main);color:#fff}
+  .chip.on::before{content:"✓";font-weight:900}
+  .choices .chip.on::before{position:absolute;top:-9px;right:-7px;width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;
+        font-size:15px;display:flex;align-items:center;justify-content:center;border:2px solid #fff}
+  .chips-small{display:flex;flex-wrap:wrap;gap:8px}
+  .chips-small .chip{min-height:50px;font-size:17px;padding:8px 14px}
+
+  /* 0~10점 */
+  .nps{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+  .nps button{font:inherit;font-size:19px;font-weight:800;background:#fffdfa;border:2px solid var(--line);border-radius:12px;min-height:52px;cursor:pointer}
+  .nps button.on{background:var(--main);border-color:var(--main);color:#fff}
+  .nps-ends{display:flex;justify-content:space-between;font-size:14px;color:var(--sub);margin-top:6px}
+
+  input[type=text],textarea{width:100%;font:inherit;font-size:19px;color:var(--ink);padding:14px 16px;border:2px solid var(--line);border-radius:14px;background:#fffdfa;min-height:56px}
+  textarea{min-height:120px;resize:vertical}
+  input:focus,textarea:focus{outline:none;border-color:var(--main);background:#fff}
+  ::placeholder{color:#b0a395}
+  label.lb{display:block;font-weight:700;font-size:17px;margin:14px 0 8px}
+
+  .bottom{position:fixed;left:0;right:0;bottom:0;background:rgba(246,241,233,.97);border-top:2px solid var(--line);padding:12px 16px calc(12px + env(safe-area-inset-bottom))}
+  .bottom .wrap{padding:0}
+  .send{width:100%;font:inherit;font-size:23px;font-weight:800;color:#fff;background:var(--main);border:none;border-radius:16px;min-height:66px;cursor:pointer}
+  .send:disabled{background:#9fb294}
+
+  /* 완료 화면 */
+  #done{display:none;text-align:center;padding:40px 8px}
+  #done .big{font-size:70px;line-height:1}
+  #done h2{font-size:27px;font-weight:800;margin:16px 0 10px;line-height:1.4}
+  #done p{font-size:18px;color:var(--sub)}
+  .after{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:22px 18px;margin-top:24px}
+  .after p{color:var(--ink) !important}
+  .btn{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;border-radius:16px;min-height:66px;
+       font:inherit;font-size:20px;font-weight:800;text-decoration:none;cursor:pointer;border:none;width:100%}
+  .btn.insta{background:linear-gradient(45deg,#f9a03f,#e1306c,#8a3ab9);color:#fff}
+  .btn.share{background:var(--main);color:#fff}
+  .copied{font-size:16px;color:var(--main-dark);margin-top:8px;min-height:24px;font-weight:700}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">DOG PALACE</div>
+  <h1>도그팰리스<br>만족도 설문</h1>
+  <p>1분이면 끝나요 🐶</p>
+  <div class="slogan">강아지에게는 자유를, 보호자에게는 힐링을!</div>
+</header>
+
+<main class="wrap" id="form">
+  <div class="intro">
+    도그팰리스를 찾아주셔서 감사합니다 😊<br>
+    더 좋은 반려견 숙소가 될 수 있도록 솔직한 마음을 들려주세요.<br>
+    <span class="anon">🔒 이름·연락처를 묻지 않는 익명 설문이에요</span>
+  </div>
+
+  <!-- 1. 전체 별점 -->
+  <section class="q" id="q-star">
+    <div class="q-head"><span class="num">1</span><h2>도그팰리스에서의 시간,<br>어떠셨나요?</h2></div>
+    <p class="hint">별을 눌러주세요</p>
+    <div class="stars" id="stars">
+      <button type="button" data-v="1" aria-label="별 1개">★</button>
+      <button type="button" data-v="2" aria-label="별 2개">★</button>
+      <button type="button" data-v="3" aria-label="별 3개">★</button>
+      <button type="button" data-v="4" aria-label="별 4개">★</button>
+      <button type="button" data-v="5" aria-label="별 5개">★</button>
+    </div>
+    <div class="star-label" id="starLabel"></div>
+    <p class="err-msg">별을 하나 이상 눌러주세요</p>
+  </section>
+
+  <!-- 2. 항목별 -->
+  <section class="q">
+    <div class="q-head"><span class="num">2</span><h2>하나씩 평가해 주세요</h2></div>
+    <p class="hint">해당하는 얼굴을 눌러주세요</p>
+    <div id="items"></div>
+  </section>
+
+  <!-- 3. 좋았던 점 -->
+  <section class="q">
+    <div class="q-head"><span class="num">3</span><h2>가장 좋았던 점은요?</h2></div>
+    <p class="hint">여러 개 골라도 돼요</p>
+    <div class="chips-small multi" id="good">
+      <button type="button" class="chip" data-v="반려견이 마음껏 뛰어놀았어요">반려견이 마음껏 뛰어놀았어요</button>
+      <button type="button" class="chip" data-v="깨끗했어요">깨끗했어요</button>
+      <button type="button" class="chip" data-v="조용하고 편안했어요">조용하고 편안했어요</button>
+      <button type="button" class="chip" data-v="바베큐가 좋았어요">바베큐가 좋았어요</button>
+      <button type="button" class="chip" data-v="불멍이 좋았어요">불멍이 좋았어요</button>
+      <button type="button" class="chip" data-v="친절했어요">친절했어요</button>
+      <button type="button" class="chip" data-v="사진 찍기 좋았어요">사진 찍기 좋았어요</button>
+    </div>
+    <input type="text" id="goodEtc" placeholder="다른 좋았던 점 (안 적으셔도 돼요)" style="margin-top:10px">
+  </section>
+
+  <!-- 4. 아쉬웠던 점 -->
+  <section class="q">
+    <div class="q-head"><span class="num">4</span><h2>아쉬웠던 점은요?</h2></div>
+    <p class="hint">여러 개 골라도 돼요</p>
+    <div class="chips-small multi" id="bad">
+      <button type="button" class="chip" data-v="없었어요" data-none="1">없었어요 👍</button>
+      <button type="button" class="chip" data-v="청결">청결</button>
+      <button type="button" class="chip" data-v="소음">소음</button>
+      <button type="button" class="chip" data-v="시설 고장">시설 고장</button>
+      <button type="button" class="chip" data-v="반려견 용품 부족">반려견 용품 부족</button>
+      <button type="button" class="chip" data-v="입실·안내">입실·안내</button>
+      <button type="button" class="chip" data-v="가격">가격</button>
+    </div>
+    <input type="text" id="badEtc" placeholder="다른 아쉬웠던 점 (안 적으셔도 돼요)" style="margin-top:10px">
+  </section>
+
+  <!-- 5. 재방문 -->
+  <section class="q">
+    <div class="q-head"><span class="num">5</span><h2>다시 오실 생각이 있으세요?</h2></div>
+    <div class="choices two" data-group="revisit">
+      <button type="button" class="chip" data-v="꼭 다시 올게요">꼭 다시 올게요</button>
+      <button type="button" class="chip" data-v="아마도요">아마도요</button>
+      <button type="button" class="chip" data-v="잘 모르겠어요">잘 모르겠어요</button>
+      <button type="button" class="chip" data-v="아니요">아니요</button>
+    </div>
+  </section>
+
+  <!-- 6. 추천 -->
+  <section class="q">
+    <div class="q-head"><span class="num">6</span><h2>주변에 추천하실 생각은요?</h2></div>
+    <p class="hint">0점(전혀 아니다) ~ 10점(꼭 추천한다)</p>
+    <div class="nps" id="nps"></div>
+    <div class="nps-ends"><span>전혀 아니다</span><span>꼭 추천한다</span></div>
+  </section>
+
+  <!-- 7. 조금만 더 -->
+  <section class="q">
+    <div class="q-head"><span class="num">7</span><h2>조금만 더 알려주세요</h2></div>
+    <p class="hint">통계에만 쓰여요 (안 고르셔도 돼요)</p>
+    <label class="lb">도그팰리스 방문은</label>
+    <div class="choices two" data-group="visits">
+      <button type="button" class="chip" data-v="처음">처음이에요</button>
+      <button type="button" class="chip" data-v="재방문">두 번 이상이에요</button>
+    </div>
+    <label class="lb">함께 온 반려견 크기 <span style="font-weight:400;color:var(--sub);font-size:15px">(여러 개 가능)</span></label>
+    <div class="chips-small multi" id="size">
+      <button type="button" class="chip" data-v="소형견">소형견</button>
+      <button type="button" class="chip" data-v="중형견">중형견</button>
+      <button type="button" class="chip" data-v="대형견">대형견</button>
+    </div>
+  </section>
+
+  <!-- 8. 하고 싶은 말 -->
+  <section class="q">
+    <div class="q-head"><span class="num">8</span><h2>하고 싶은 말씀</h2></div>
+    <p class="hint">칭찬도, 아쉬운 점도 모두 감사히 읽을게요</p>
+    <textarea id="memo" placeholder="자유롭게 적어주세요 (안 적으셔도 돼요)"></textarea>
+  </section>
+</main>
+
+<!-- 완료 화면 -->
+<main class="wrap" id="done">
+  <div id="doneHigh" style="display:none">
+    <div class="big">😍</div>
+    <h2>좋게 봐주셔서<br>정말 감사해요!</h2>
+    <p>반려견과의 추억이 오래 남길 바라요 🐾</p>
+    <div class="after">
+      <p>도그팰리스에서 찍은 사진을 올리실 때<br><b>@dogpalace_dj</b> 를 태그해 주시면<br>저희가 꼭 찾아가서 볼게요 😊</p>
+      <a class="btn insta" href="https://www.instagram.com/dogpalace_dj/" target="_blank" rel="noopener">📷 도그팰리스 인스타그램 가기</a>
+      <button type="button" class="btn share" id="shareBtn">💌 친구에게 도그팰리스 알려주기</button>
+      <div class="copied" id="copied"></div>
+    </div>
+  </div>
+  <div id="doneLow" style="display:none">
+    <div class="big">🙏</div>
+    <h2>솔직하게 말씀해 주셔서<br>감사해요</h2>
+    <p>남겨주신 의견은 한 줄 한 줄 꼼꼼히 읽고<br>꼭 고쳐 나갈게요.</p>
+    <div class="after">
+      <p>다음에 오실 땐 더 편안하게 모실 수 있도록<br>준비하고 있을게요 🐶</p>
+    </div>
+  </div>
+</main>
+
+<div class="bottom" id="bottom">
+  <div class="wrap"><button type="button" class="send" id="send">설문 보내기</button></div>
+</div>
+
+<script>
+/* 해피콜과 같은 구글 Apps Script 주소 (답변은 '만족도' 탭에 저장) */
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwmTIbqF9NfuzD_bxxi_slg_QBqq5REpzPmq05n5P6mo17U27nrISaYK4mfQVTi5V2DMw/exec';
+const SHARE_URL = 'https://www.dogpalace.kr';
+
+const $ = s => document.querySelector(s);
+const state = { star: 0, revisit: '', visits: '', nps: '' , items: {} };
+
+/* 1. 별점 */
+const STAR_TEXT = ['', '많이 아쉬웠어요', '아쉬웠어요', '보통이었어요', '좋았어요', '최고였어요!'];
+document.querySelectorAll('#stars button').forEach(b => b.onclick = () => {
+  state.star = +b.dataset.v;
+  document.querySelectorAll('#stars button').forEach(x => x.classList.toggle('on', +x.dataset.v <= state.star));
+  $('#starLabel').textContent = STAR_TEXT[state.star];
+  $('#q-star').classList.remove('error');
+});
+
+/* 2. 항목별 얼굴 */
+const ITEMS = [
+  ['청결', '객실 청결·위생'],
+  ['놀이공간', '반려견 놀이 공간'],
+  ['반려견용품', '반려견 편의 용품 (식기·배변 용품 등)'],
+  ['침구시설', '침구·편의 시설'],
+  ['바베큐불멍', '바베큐·불멍', true],
+  ['친절', '직원 응대·친절'],
+  ['가격', '가격 대비 만족'],
+];
+const FACES = [['😞','별로예요'],['😐','보통'],['🙂','좋아요'],['😍','최고예요']];
+$('#items').innerHTML = ITEMS.map(([k, name, canSkip]) => `
+  <div class="item">
+    <div class="item-name">${name}</div>
+    <div class="faces ${canSkip ? 'five' : ''}" data-item="${k}">
+      ${FACES.map(([e, t]) => `<button type="button" class="face" data-v="${t}"><span class="e">${e}</span><span class="t">${t}</span></button>`).join('')}
+      ${canSkip ? `<button type="button" class="face" data-v="이용 안 함"><span class="e">➖</span><span class="t">안 썼어요</span></button>` : ''}
+    </div>
+  </div>`).join('');
+document.querySelectorAll('.faces').forEach(box => box.addEventListener('click', e => {
+  const b = e.target.closest('.face'); if (!b) return;
+  const on = b.classList.contains('on');
+  box.querySelectorAll('.face').forEach(x => x.classList.remove('on'));
+  if (!on) b.classList.add('on');
+  state.items[box.dataset.item] = on ? '' : b.dataset.v;
+}));
+
+/* 여러 개 고르기 ("없었어요"는 다른 것과 같이 안 됨) */
+document.querySelectorAll('.multi').forEach(box => box.addEventListener('click', e => {
+  const b = e.target.closest('.chip'); if (!b) return;
+  b.classList.toggle('on');
+  if (b.classList.contains('on')) box.querySelectorAll('.chip').forEach(c => {
+    if (c !== b && (b.dataset.none || c.dataset.none)) c.classList.remove('on');
+  });
+}));
+const picked = id => [...document.querySelectorAll('#' + id + ' .chip.on')].map(c => c.dataset.v);
+
+/* 하나만 고르기 */
+document.querySelectorAll('[data-group]').forEach(box => box.addEventListener('click', e => {
+  const b = e.target.closest('.chip'); if (!b) return;
+  const on = b.classList.contains('on');
+  box.querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
+  if (!on) b.classList.add('on');
+  state[box.dataset.group] = on ? '' : b.dataset.v;
+}));
+
+/* 6. 0~10점 */
+$('#nps').innerHTML = Array.from({length: 11}, (_, i) => `<button type="button" data-v="${i}">${i}</button>`).join('');
+$('#nps').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const on = b.classList.contains('on');
+  $('#nps').querySelectorAll('button').forEach(x => x.classList.remove('on'));
+  if (!on) b.classList.add('on');
+  state.nps = on ? '' : b.dataset.v;
+});
+
+/* 보내기 */
+$('#send').onclick = async () => {
+  if (!state.star) {
+    $('#q-star').classList.add('error');
+    $('#q-star').scrollIntoView({behavior:'smooth', block:'start'});
+    return;
+  }
+  const join = (arr, etc) => arr.concat(etc ? [etc] : []).join(', ');
+  const data = {
+    type: '만족도',
+    별점: state.star,
+    청결: state.items.청결 || '', 놀이공간: state.items.놀이공간 || '', 반려견용품: state.items.반려견용품 || '',
+    침구시설: state.items.침구시설 || '', 바베큐불멍: state.items.바베큐불멍 || '', 친절: state.items.친절 || '', 가격: state.items.가격 || '',
+    좋았던점: join(picked('good'), $('#goodEtc').value.trim()),
+    아쉬웠던점: join(picked('bad'), $('#badEtc').value.trim()),
+    재방문의향: state.revisit, 추천점수: state.nps,
+    방문횟수: state.visits, 반려견크기: picked('size').join(', '),
+    하고싶은말: $('#memo').value.trim(),
+  };
+  const btn = $('#send');
+  btn.disabled = true; btn.textContent = '보내는 중이에요…';
+  try {
+    await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(data) });
+    showDone();
+  } catch (err) {
+    btn.disabled = false; btn.textContent = '설문 보내기';
+    alert('전송이 잘 안 됐어요. 잠시 후 다시 눌러주세요.');
+  }
+};
+
+function showDone() {
+  $('#form').style.display = 'none';
+  $('#bottom').style.display = 'none';
+  $('#done').style.display = 'block';
+  (state.star >= 4 ? $('#doneHigh') : $('#doneLow')).style.display = 'block';
+  window.scrollTo(0, 0);
+}
+
+/* 친구에게 알려주기: 휴대폰 공유창, 안 되면 주소 복사 */
+$('#shareBtn').onclick = async () => {
+  const text = '반려견이랑 다녀왔는데 정말 좋았던 곳! 도그팰리스 🐶';
+  try {
+    if (navigator.share) { await navigator.share({ title: '도그팰리스', text, url: SHARE_URL }); return; }
+  } catch (e) { if (e && e.name === 'AbortError') return; }
+  try { await navigator.clipboard.writeText(text + ' ' + SHARE_URL); $('#copied').textContent = '주소를 복사했어요! 카톡에 붙여넣어 보내주세요'; }
+  catch (e) { $('#copied').textContent = SHARE_URL; }
+};
+</script>
+</body>
+</html>
