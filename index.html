@@ -181,6 +181,8 @@
   }
   .call span{font-size:18px;font-weight:600;opacity:.9}
   .call:active{background:var(--main-dark)}
+  .late{border-color:var(--accent);background:var(--accent-soft)}
+  .call.sms{background:var(--accent)}
   #done .sum{
     text-align:left;background:var(--card);border:2px solid var(--line);border-radius:18px;
     padding:18px 20px;margin-top:24px;font-size:17px;white-space:pre-line;
@@ -391,6 +393,11 @@
   <div class="big">🐶</div>
   <h2>답변이 잘 전달되었어요!</h2>
   <p>꼼꼼히 준비해 두고 기다릴게요.<br>조심히 오세요 😊</p>
+  <!-- 입실이 코앞이면: 현장 점장님께 문자로도 보내기 -->
+  <div class="manager late" id="lateBox" style="display:none">
+    <p><b>📌 입실이 얼마 남지 않았어요!</b><br>현장 점장님께도 바로 전달되도록<br>아래 버튼을 눌러 <b>문자 보내기</b>까지 눌러주세요.</p>
+    <a class="call sms" id="smsBtn" href="#">📩 점장님께 문자로 보내기<span>내용은 자동으로 적혀 있어요</span></a>
+  </div>
   <div class="manager">
     <p>확인 감사합니다 😃<br>저는 예약 담당자라, 현장에서는 <b>점장님</b>께 연락 주시면 더 빠르게 답변 받으실 수 있어요.</p>
     <a class="call" href="tel:01026737955">📞 점장님께 전화하기<span>010-2673-7955</span></a>
@@ -789,7 +796,32 @@ $('#send').onclick = async () => {
   }
 };
 
+// 입실 당일이거나, 입실 전날 저녁 6시 이후면 → 이미 현장에 출력표가 넘어갔을 수 있어서 문자 버튼 보여주기
+const LATE_HOUR = 18;          // 구글 시트의 매일 자동 메일 시간(DAILY_HOUR)과 맞춰주세요
+const MANAGER_PHONE = '01026737955';
+function isLate(inDay){
+  if (!inDay) return false;
+  const now = new Date();
+  const today = ymd(now), tomorrow = ymd(addDays(today, 1));
+  return inDay <= today || (inDay === tomorrow && now.getHours() >= LATE_HOUR);
+}
+function smsBody(d){
+  const md = v => { const t = new Date(v + 'T00:00:00'); return (t.getMonth()+1) + '/' + t.getDate(); };
+  return [
+    `[도그팰리스 해피콜] ${d.예약자}님(${d.연락처}) ${md(d.입실일)} 입실 답변 보냈어요.`,
+    d.객실 ? `객실: ${d.객실}` : '',
+    `숯불 ${d.숯불} / 바베큐정식 ${d.바베큐정식} / 장작 ${d.장작}`,
+    `인원: 성인 ${d.어른}, 아동 ${d.아이}, 유아 ${d.유아}`,
+    `도착: ${d.도착예정}`,
+  ].filter(Boolean).join('\n');
+}
+
 function showDone(d){
+  if (isLate(d.입실일)) {
+    const ios = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    $('#smsBtn').href = `sms:${MANAGER_PHONE}${ios ? '&' : '?'}body=${encodeURIComponent(smsBody(d))}`;
+    $('#lateBox').style.display = 'block';
+  }
   $('#form').style.display = 'none';
   $('#bottom').style.display = 'none';
   $('#done').style.display = 'block';
