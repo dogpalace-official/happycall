@@ -797,7 +797,7 @@ $('#send').onclick = async () => {
 };
 
 // 입실 당일이거나, 입실 전날 저녁 6시 이후면 → 이미 현장에 출력표가 넘어갔을 수 있어서 문자 버튼 보여주기
-const LATE_HOUR = 18;          // 구글 시트의 매일 자동 메일 시간(DAILY_HOUR)과 맞춰주세요
+const LATE_HOUR = 17;          // 구글 시트의 매일 자동 메일 시간(DAILY_HOUR)과 맞춰주세요
 const MANAGER_PHONE = '01026737955';
 function isLate(inDay){
   if (!inDay) return false;
