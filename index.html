@@ -358,20 +358,21 @@
   <!-- 8. 알게 된 경로 -->
   <section class="q">
     <div class="q-head"><span class="num">8</span><h2>도그팰리스를 어떻게 알게 되셨어요?</h2></div>
-    <p class="hint">번거로우시겠지만 저희가 자료를 모으고 있어서요 😅<br>해당되는 것을 모두 눌러주세요</p>
+    <p class="hint">번거로우시겠지만 저희가 자료를 모으고 있어서요 😅<br>칸마다 하나씩 눌러주세요</p>
 
-    <label class="lb">어디에서 보셨나요?</label>
-    <div class="chips-small multi" id="srcChannel">
+    <label class="lb">어디에서 보셨나요? <span style="font-weight:400;color:var(--sub);font-size:15px">(하나만)</span></label>
+    <div class="chips-small single" id="srcChannel">
       <button type="button" class="chip" data-v="재방문">다시 왔어요 (재방문)</button>
       <button type="button" class="chip" data-v="네이버">네이버</button>
       <button type="button" class="chip" data-v="구글">구글</button>
       <button type="button" class="chip" data-v="야놀자">야놀자</button>
       <button type="button" class="chip" data-v="반려생활">반려생활</button>
       <button type="button" class="chip" data-v="인스타그램">인스타그램</button>
+      <button type="button" class="chip" data-v="공항공사">공항공사</button>
     </div>
 
-    <label class="lb">검색하셨다면 어떤 말로 찾으셨나요?</label>
-    <div class="chips-small multi" id="srcKeyword">
+    <label class="lb">검색하셨다면 어떤 말로 찾으셨나요? <span style="font-weight:400;color:var(--sub);font-size:15px">(하나만)</span></label>
+    <div class="chips-small single" id="srcKeyword">
       <button type="button" class="chip" data-v="애견펜션">애견펜션</button>
       <button type="button" class="chip" data-v="애견동반펜션">애견동반펜션</button>
       <button type="button" class="chip" data-v="애견동반숙소">애견동반숙소</button>
@@ -511,9 +512,13 @@ document.querySelectorAll('[data-group]').forEach(box => {
 });
 
 /* ----- 여러 개 고르는 버튼 (알게 된 경로) ----- */
-document.querySelectorAll('.multi').forEach(box => {
+// 알게 된 경로: 칸마다 하나만 고르기 (다시 누르면 취소)
+document.querySelectorAll('.single').forEach(box => {
   box.addEventListener('click', e => {
-    const b = e.target.closest('.chip'); if (b) b.classList.toggle('on');
+    const b = e.target.closest('.chip'); if (!b) return;
+    const on = b.classList.contains('on');
+    box.querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
+    if (!on) b.classList.add('on');
   });
 });
 const picked = id => [...document.querySelectorAll('#' + id + ' .chip.on')].map(c => c.dataset.v).join(', ');
